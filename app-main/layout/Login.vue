@@ -21,21 +21,21 @@
           :rules="rules"
         >
           <a-form-item ref="userName" name="userName">
-            <a-input :value="formState.userName" placeholder="账号" size="large">
+            <a-input v-model:value="formState.userName" placeholder="账号" size="large">
               <template #prefix>
                 <UserOutlined style="color: rgba(0, 0, 0, 0.25)"/>
               </template>
             </a-input>
           </a-form-item>
           <a-form-item ref="password" name="password">
-            <a-input :value="formState.password" type="password" placeholder="密码" size="large">
+            <a-input v-model:value="formState.password" type="password" placeholder="密码" size="large">
               <template #prefix>
                 <LockOutlined style="color: rgba(0, 0, 0, 0.25)"/>
               </template>
             </a-input>
           </a-form-item>
           <a-form-item ref="remember" name="remember">
-            <a-checkbox-group :value="formState.remember" size="large" style='float: left'>
+            <a-checkbox-group v-model:value="formState.remember" size="large" style='float: left'>
               <a-checkbox value="1" name="remember">记住密码</a-checkbox>
             </a-checkbox-group>
           </a-form-item>

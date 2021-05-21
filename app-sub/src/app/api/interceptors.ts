@@ -62,6 +62,8 @@ export default (service: AxiosInstance) => {
             message.error('参数为空。')
           } else if (body.status === 503) {
             message.error(body.message)
+          } else if (body.status === 500) {
+            message.error(body.message)
           } else if (body.status === 204) {
             message.success(body.message)
           } else if (body.status === 201) {

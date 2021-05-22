@@ -34,7 +34,6 @@
     <a-button @click="toLogin()">
       go-to-login
     </a-button>
-    <hello-world />
     <demo-children
       :my-count="myCount"
       @change-count="changeMyCount"

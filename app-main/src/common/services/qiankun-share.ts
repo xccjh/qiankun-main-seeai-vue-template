@@ -10,8 +10,8 @@ class Shared {
     return store.getters.userInfo
   }
 
-  public setUserInfo () {
-    store.commit('setUserInfo', { ...store.getters.userInfo, nickName: 'testChange' })
+  public setUserInfo (data) {
+    store.commit('setUserInfo', data)
   }
 }
 

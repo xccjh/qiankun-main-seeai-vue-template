@@ -2,7 +2,7 @@
   <div class="home">
     <h1>This is an app-sub home page</h1>
     <h1>Welcome To Use SEEAI Template</h1>
-    <a-button @click='setUserInfo()'>modify global store</a-button>
+    <a-button @click='setUserInfo()' v-if='qiankun'>modify global store</a-button>
     <div>
       <img :src='imgUrl' alt=''>
     </div>
@@ -15,7 +15,8 @@
 <script lang="ts">
 import { defineComponent, onMounted, toRaw, reactive, ref } from 'vue'
 import { QiankunActionsInstance, SharedModule } from '../src/common/services'
-
+import { win } from '@/common/base'
+declare const window:win
 export default defineComponent({
   name: 'home',
   setup () {
@@ -37,7 +38,8 @@ export default defineComponent({
     return {
       imgUrl: require('@images/logo.png'),
       setUserInfo,
-      userInfoReactive
+      userInfoReactive,
+      qiankun: window.__POWERED_BY_QIANKUN__
     }
   }
 })

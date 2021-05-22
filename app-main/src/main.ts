@@ -10,6 +10,14 @@ import '../style/index.scss'
 
 // import { prefetchApps } from 'qiankun'
 
+// prefetchApps([
+//   { name: 'app-sub', entry: '//locahost:9000/app-sub/#/app-sub/app-sub' },
+//   { name: 'app-other-sub', entry: '//locahost:9001/app-other-sub/#/app-other-sub/app-other-sub' }
+// ])
+
+const app = createApp(App).use(store).use(router).use(CommonPart).use(Antd)
+app.config.globalProperties.micro = {}
+app.config.globalProperties.microApp = true
 startQiankun({
   singular: false,
   prefetch: 'all',
@@ -24,12 +32,5 @@ startQiankun({
     })
   }
 })
-// prefetchApps([
-//   { name: 'app-sub', entry: '//locahost:9000/app-sub/#/app-sub/app-sub' },
-//   { name: 'app-other-sub', entry: '//locahost:9001/app-other-sub/#/app-other-sub/app-other-sub' }
-// ])
-
-const app = createApp(App).use(store).use(router).use(CommonPart).use(Antd)
-app.config.globalProperties.micro = {}
 app.mount('#app')
 export { app }

@@ -36,7 +36,6 @@
     </a-button>
     <!--    <a-button @click='loadSubApp()'>load-sub-app</a-button>-->
     <!--    <a-button @click='unLoadApp()'>destory-sub-app</a-button>-->
-    <hello-world />
     <demo-children
       :my-count="myCount"
       @change-count="changeMyCount"

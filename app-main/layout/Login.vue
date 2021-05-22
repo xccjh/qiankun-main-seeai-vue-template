@@ -115,7 +115,7 @@ export default defineComponent({
                 res.data.user.password = formValue.password
                 store.commit('setUserInfo', res.data.user)
                 router.push({
-                  name: 'app-index'
+                  name: 'home'
                 })
               } else {
                 message.error('未登录或登录已过期，请重新登录。')

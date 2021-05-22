@@ -58,6 +58,7 @@ import { message } from 'ant-design-vue'
 import { Router, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { FormState, win } from '@/common/base'
+import { SharedModule } from '@/common/services'
 
 declare const window: win
 
@@ -113,9 +114,9 @@ export default defineComponent({
               }
               if (res.data.user && res.data.user.telphone) {
                 res.data.user.password = formValue.password
-                store.commit('setUserInfo', res.data.user)
+                SharedModule.getShared().setUserInfo(res.data.user)
                 router.push({
-                  name: 'app-index'
+                  name: 'home'
                 })
               } else {
                 message.error('未登录或登录已过期，请重新登录。')

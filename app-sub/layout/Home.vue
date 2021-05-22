@@ -16,7 +16,8 @@
 import { defineComponent, onMounted, toRaw, reactive, ref } from 'vue'
 import { QiankunActionsInstance, SharedModule } from '../src/common/services'
 import { win } from '@/common/base'
-declare const window:win
+
+declare const window: win
 export default defineComponent({
   name: 'home',
   setup () {
@@ -24,7 +25,7 @@ export default defineComponent({
     const userInfo = shared.getUserInfo()
     const userInfoReactive = ref(userInfo)
     const setUserInfo = () => {
-      shared.setUserInfo()
+      shared.setUserInfo({ ...userInfo, nickName: 'testChange' })
       userInfoReactive.value = shared.getUserInfo()
     }
     onMounted(() => {

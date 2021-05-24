@@ -16,7 +16,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'index',
-    redirect: `${appMainBase}/home`,
+    redirect: `${appMainBase}/login`,
     meta: {
       name: '入口'
     }

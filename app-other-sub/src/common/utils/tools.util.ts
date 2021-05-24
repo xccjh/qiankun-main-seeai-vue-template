@@ -1,29 +1,97 @@
-import { Json, AtrFormOpt } from '../base/common'
+import { Json, AtrFormOpt, win } from '../base/common'
 import { Observable, Subscriber, timer } from 'rxjs'
+import themeColor from '@/assets/plugins/themeColor'
+declare const window: win
 
 export class ToolsUtil {
   static ossPrefix = process.env.VUE_APP_OSS_URL;
+  static themeMap = {
+    default: {
+      themeLabel: 'default',
+      primaryColor: '#00AB84'
+    },
+    zksd: {
+      themeLabel: 'educational',
+      primaryColor: '#FF9900'
+    }
+  };
 
   static cacheOrgCode = '';
 
   /**
-   * 从问号里拿orgCode，/?qkc#/
+   * 从符合?xx&或?xx&v.里拿orgCode,注意符合?第一位加&,此外，切记不要只加=,即？qkc=拿到的是cjsd
+   * /?qkc#/ /?qkc&aa=1#/ /#/?qkc /#/?qkc&aa=1 四种情况拿到qkc
+   * /#/ 拿到cjsd
+   * /?aa=1&qkc&bb=2#/ /#/?aa=1&qkc&bb=2 为了避免用户误删查询字符串导致拿错,这两种拿到cjsd
+   * 不符合一律拿到cjsd
    */
   static getOrgCodeFromQuestionMark = () => {
     const hrefs = window.location.href.split('?')
     if (hrefs.length >= 2) {
       const paramStr = hrefs[1]
-      // 参数字符串里有没带 =?/#
-      let orgCode = paramStr.split('=')[0]
-      orgCode = orgCode.split('?')[0]
-      orgCode = orgCode.split('/')[0]
-      orgCode = orgCode.split('#')[0]
-      orgCode = orgCode.split('/')[0]
-      return orgCode
+      let orgCodeEnd = hrefs[2]// hash后的?之后
+      // 参数字符串里有没带 #&
+      let orgCodePre = paramStr.split('#')[0] // hash前的?和#之间
+      const test = /^[a-z]+$/
+      if (orgCodePre) {
+        if (test.test(orgCodePre)) {
+          return orgCodePre
+        } else {
+          orgCodePre = orgCodePre.split('&')[0]
+          if (test.test(orgCodePre)) {
+            return orgCodePre
+          } else {
+            orgCodePre = orgCodePre.split('=v.')[0]
+            if (test.test(orgCodePre)) {
+              return orgCodePre
+            }
+          }
+        }
+      }
+      if (orgCodeEnd) {
+        if (test.test(orgCodeEnd)) {
+          return orgCodeEnd
+        } else {
+          orgCodeEnd = orgCodeEnd.split('&')[0]
+          if (test.test(orgCodeEnd)) {
+            return orgCodeEnd
+          } else {
+            orgCodeEnd = orgCodeEnd.split('=v.')[0]
+            if (test.test(orgCodeEnd)) {
+              return orgCodeEnd
+            }
+          }
+        }
+      }
+      return 'cjsd'
     } else {
-      return ''
+      return 'cjsd'
     }
-  };
+    // const hrefs = window.location.href.split('?');
+    // if (hrefs.length >= 2) {
+    //   const paramStr = hrefs[1];
+    //   // 参数字符串里有没带 =?/#
+    //   let orgCode = paramStr.split('=')[0];
+    //   orgCode = orgCode.split('?')[0];
+    //   orgCode = orgCode.split('/')[0];
+    //   orgCode = orgCode.split('#')[0];
+    //   orgCode = orgCode.split('/')[0];
+    //   return orgCode;
+    // } else {
+    //   return '';
+    // }
+  }
+
+  static initTheme () {
+    const sdTheme = this.themeMap[this.getOrgCode()]
+    if (sdTheme && sdTheme.themeLabel) {
+      themeColor.changeColor(sdTheme.primaryColor)
+      window.$theme.style = sdTheme.themeLabel
+    } else {
+      themeColor.changeColor(this.themeMap.default.primaryColor)
+      window.$theme.style = this.themeMap.default.themeLabel
+    }
+  }
 
   static getProdId (fn) {
     const codeUid = localStorage.getItem('SCHOLAR_CODEUID_' + this.getOrgCode())
@@ -154,21 +222,30 @@ export class ToolsUtil {
       return ToolsUtil.cacheOrgCode
     }
 
-    if ((window as any).__WHO__ && (window as any).__WHO__ === 'sys') {
+    // if (window['__WHO__'] && window['__WHO__'] === 'mng') {
+    //   ToolsUtil.cacheOrgCode = 'cjsd';
+    // } else {
+    const org = ToolsUtil.getOrgCodeFromQuestionMark()
+    // const org = LocalStorageUtil.get
+    // console.log("question:", org);
+    if (org === '') {
+      // ToolsUtil.cacheOrgCode = ToolsUtil.getOrgCodeFromSubDN();
       ToolsUtil.cacheOrgCode = 'cjsd'
     } else {
-      const org = ToolsUtil.getOrgCodeFromQuestionMark()
-      if (org === '') {
-        // ToolsUtil.cacheOrgCode = ToolsUtil.getOrgCodeFromSubDN();
-        // if (org === '') {
-        ToolsUtil.cacheOrgCode = 'cjsd'
-        // }
-      } else {
-        ToolsUtil.cacheOrgCode = org
-      }
+      ToolsUtil.cacheOrgCode = org
     }
+    // }
+    console.log(ToolsUtil.cacheOrgCode)
+
+    // const org = LocalStorageUtil.getClassMarketData()?.orgCode || '' //使用此方法会形成tools、localstorage文件循环调用
+    // const org = JSON.parse(localStorage.getItem('MarketData'))?.orgCode || ''
+    // if(org){
+    //   ToolsUtil.cacheOrgCode = org
+    // }else{
+    //   ToolsUtil.cacheOrgCode = 'cjsd'
+    // }
     return ToolsUtil.cacheOrgCode
-  };
+  }
 
   static getOssUrl (url: string) {
     if (!url) {

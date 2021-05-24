@@ -55,7 +55,7 @@ import { ValidateErrorEntity } from 'ant-design-vue/es/form/interface'
 import { LocalStorageUtil, SessionStorageUtil, ToolsUtil } from '../src/common/utils'
 import { auth } from '../src/app/api'
 import { message } from 'ant-design-vue'
-import { Router, useRouter } from 'vue-router'
+import { RouteLocationNormalizedLoaded, Router, useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { FormState, win } from '@/common/base'
 import { SharedModule } from '@/common/services'
@@ -68,6 +68,7 @@ export default defineComponent({
     const formRef = ref()
     const loading = ref(false)
     const router: Router = useRouter()
+    const route:RouteLocationNormalizedLoaded = useRoute()
     const store = useStore()
     const loginData = LocalStorageUtil.getLogin()
     const formModal: FormState = {
@@ -116,7 +117,8 @@ export default defineComponent({
                 res.data.user.password = formValue.password
                 SharedModule.getShared().setUserInfo(res.data.user)
                 router.push({
-                  name: 'home'
+                  name: 'home',
+                  query: route.query
                 })
               } else {
                 message.error('未登录或登录已过期，请重新登录。')

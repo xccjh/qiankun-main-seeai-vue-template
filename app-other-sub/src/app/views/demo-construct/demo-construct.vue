@@ -22,7 +22,7 @@
       style="width: 30px;height: 30px;"
     />
     <a-divider />
-    <h1>This is an demo-construct page --- {{ myCountComputed }}(computed)</h1>
+    <h1 class='p'>This is an demo-construct page --- {{ myCountComputed }}(computed)</h1>
     <h1>This is an global store data change --- {{ storeCount }}</h1>
     <h1>This is an local store data change --- {{ localCount }} --- {{ localMapCount }}(nameScoped mapState)</h1>
     <a-button @click="incrementGlobal()">
@@ -30,6 +30,9 @@
     </a-button>
     <a-button @click="incrementLocal()">
       add local storeCount
+    </a-button>
+    <a-button @click="changeTheme()">
+      更换主题
     </a-button>
     <a-button @click="toLogin()">
       go-to-login
@@ -50,7 +53,11 @@ import { RouteLocationNormalized, Router, useRoute, useRouter } from 'vue-router
 import { useStore, createNamespacedHelpers } from 'vuex'
 import { DemoChildren } from './components'
 import { RedditOutlined, SyncOutlined, SmileOutlined, HeartTwoTone } from '@ant-design/icons-vue'
+import { LocalStorageUtil, ToolsUtil } from '@/common/utils'
+import themeColor from '@/assets/plugins/themeColor'
+import { win } from '@/common/base'
 const { mapState } = createNamespacedHelpers('DemoConstructStore')
+declare const window:win
 
 export default defineComponent({
   name: 'DemoConstruct',
@@ -158,6 +165,14 @@ export default defineComponent({
           return undefined
         }
       }),
+      changeTheme () {
+        // const hideMessage = message.loading('正在切换主题！', 0)
+        window.$theme.style = ToolsUtil.themeMap.zksd.themeLabel
+        themeColor.changeColor(ToolsUtil.themeMap.zksd.primaryColor).finally(() => {
+          LocalStorageUtil.putTheme(ToolsUtil.themeMap.zksd.primaryColor)
+          // hideMessage()
+        })
+      },
       incrementGlobal: () => store.commit('increment'),
       incrementLocal: () => store.commit('DemoConstructStore/demoConstructIncrement')
     }
@@ -171,3 +186,8 @@ export default defineComponent({
   }
 })
 </script>
+<style lang="less" theme='educational'>
+  .p {
+    font-size:60px!important;
+  }
+</style>

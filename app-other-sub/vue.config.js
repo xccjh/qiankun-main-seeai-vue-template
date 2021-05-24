@@ -1,10 +1,26 @@
 const path = require('path')
 const CompressionWebpackPlugin = require('compression-webpack-plugin')
+const ThemeSwitchPlugin = require('@xccjh/vue3-theme-peel')
+const ThemeColorReplacer = require('webpack-theme-color-replacer')
+const client = require('webpack-theme-color-replacer/client')
+const { generate } = require('@ant-design/colors/lib')
 const productionGzipExtensions = ['js', 'css', 'txt', 'svg', 'eot', 'woff', 'ttf', 'svg', 'ico', 'png']
 const { name } = require('./package')
 const { microAppSetting } = require('../package.json')
 const microSubConfig = (microAppSetting[process.env.NODE_ENV] || []).filter(e => e.name === name)[0] || { base: '' }
 const publicPath = `${microSubConfig.host}:${microSubConfig.port}${microSubConfig.base.split('#/')[0]}`
+const dev = process.env.NODE_ENV === 'development'
+
+function getAntdSerials (color) {
+  // 淡化（即less的tint）
+  const lightens = new Array(9).fill(0).map((t, i) => {
+    return client.varyColor.lighten(color, i / 10)
+  })
+  // colorPalette变换得到颜色值
+  const colorPalettes = generate(color)
+  const rgb = client.varyColor.toNum3(color.replace('#', '')).join(',')
+  return lightens.concat(colorPalettes).concat(rgb)
+}
 
 function resolve (dir) {
   return path.join(__dirname, dir)
@@ -37,16 +53,95 @@ module.exports = {
         // modifyVars: {
         //   'primary-color': '#00AB84'
         // }
-        modifyVars: {
-          hack: `true; @import "${path.join(
-            __dirname,
-            './theme/default/index.less'
-          )}";`
-        }
+        // modifyVars: {
+        //   hack: `true; @import "${path.join(
+        //     __dirname,
+        //     './theme/default/index.less'
+        //   )}";`
+        // }
       }
     }
   },
   chainWebpack: config => {
+    const newLoader = {
+        loader: ThemeSwitchPlugin.loader,
+        options: {}
+      }
+    ;['normal', 'vue-modules', 'vue', 'normal-modules'].forEach((item) => {
+      ['css', 'scss', 'sass', 'less', 'stylus'].forEach((style) => {
+        const originUse = config.module.rule(style).oneOf(item).toConfig().use
+        originUse.splice(0, 1, newLoader)
+        config.module.rule(style).oneOf(item).uses.clear()
+        config.module.rule(style).oneOf(item).merge({ use: originUse })
+      })
+    })
+    config
+      .plugin('ThemeColorReplacer')
+      .use(ThemeColorReplacer, [{
+        fileName: 'css/theme-colors.css',
+        externalCssFiles: dev ? [] : ['./node_modules/ant-design-vue/dist/antd.css'],
+        matchColors: getAntdSerials('#1890ff'), // 主色系列
+        injectCss: true,
+        // 改变样式选择器，解决样式覆盖问题
+        changeSelector (selector) {
+          switch (selector) {
+            case '.ant-calendar-today .ant-calendar-date':
+              return ':not(.ant-calendar-selected-date):not(.ant-calendar-selected-day)' + selector
+            case '.ant-btn:focus,.ant-btn:hover':
+              return '.ant-btn:focus:not(.ant-btn-primary):not(.ant-btn-danger),.ant-btn:hover:not(.ant-btn-primary):not(.ant-btn-danger)'
+            case '.ant-btn.active,.ant-btn:active':
+              return '.ant-btn.active:not(.ant-btn-primary):not(.ant-btn-danger),.ant-btn:active:not(.ant-btn-primary):not(.ant-btn-danger)'
+            case '.ant-steps-item-process .ant-steps-item-icon > .ant-steps-icon':
+            case '.ant-steps-item-process .ant-steps-item-icon>.ant-steps-icon':
+              return ':not(.ant-steps-item-process)' + selector
+            case '.ant-menu-horizontal>.ant-menu-item-active,.ant-menu-horizontal>.ant-menu-item-open,.ant-menu-horizontal>.ant-menu-item-selected,.ant-menu-horizontal>.ant-menu-item:hover,.ant-menu-horizontal>.ant-menu-submenu-active,.ant-menu-horizontal>.ant-menu-submenu-open,.ant-menu-horizontal>.ant-menu-submenu-selected,.ant-menu-horizontal>.ant-menu-submenu:hover':
+            case '.ant-menu-horizontal > .ant-menu-item-active,.ant-menu-horizontal > .ant-menu-item-open,.ant-menu-horizontal > .ant-menu-item-selected,.ant-menu-horizontal > .ant-menu-item:hover,.ant-menu-horizontal > .ant-menu-submenu-active,.ant-menu-horizontal > .ant-menu-submenu-open,.ant-menu-horizontal > .ant-menu-submenu-selected,.ant-menu-horizontal > .ant-menu-submenu:hover':
+              return '.ant-menu-horizontal > .ant-menu-item-active,.ant-menu-horizontal > .ant-menu-item-open,.ant-menu-horizontal > .ant-menu-item-selected,.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-item:hover,.ant-menu-horizontal > .ant-menu-submenu-active,.ant-menu-horizontal > .ant-menu-submenu-open,.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-submenu-selected,.ant-menu-horizontal:not(.ant-menu-dark) > .ant-menu-submenu:hover'
+            case '.ant-menu-horizontal > .ant-menu-item-selected > a':
+            case '.ant-menu-horizontal>.ant-menu-item-selected>a':
+              return '.ant-menu-horizontal:not(ant-menu-light):not(.ant-menu-dark) > .ant-menu-item-selected > a'
+            case '.ant-menu-horizontal > .ant-menu-item > a:hover':
+            case '.ant-menu-horizontal>.ant-menu-item>a:hover':
+              return '.ant-menu-horizontal:not(ant-menu-light):not(.ant-menu-dark) > .ant-menu-item > a:hover'
+            default :
+              return selector
+          }
+        }
+      }]).before('html')
+    if (!dev) {
+      config.devtool('none')
+      // config
+      //   .plugins.delete('extract-css')
+      config
+        .plugin('ThemeSwitchPlugin')
+        .use(ThemeSwitchPlugin, [{
+          filename: 'css/[name].[hash:8].css',
+          chunkFilename: 'css/[name].[contenthash:8].css'
+        }]).before('html')
+      config.optimization.minimizer('terser').tap(args => {
+        args[0].sourceMap = false
+        return args
+      })
+      config
+        .plugin('ThemeSwitchPluginInject')
+        .use(ThemeSwitchPlugin.inject, [{
+          publicPath
+        }])
+    } else {
+      config
+        .plugin('ThemeSwitchPlugin')
+        .use(ThemeSwitchPlugin.inject)
+    }
+    config.plugin('html').tap(args => {
+      const param = args[0]
+      param.minify = {
+        removeComments: true,
+        collapseWhitespace: true,
+        removeAttributeQuotes: true
+      }
+      param.chunksSortMode = 'dependency'
+      return [param]
+    })
     config.module
       .rule('eslint')
       .use('eslint-loader')

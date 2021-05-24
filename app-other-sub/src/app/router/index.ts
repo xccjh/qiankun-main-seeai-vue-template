@@ -88,7 +88,7 @@ const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'index',
-    redirect: '/app-other-sub',
+    redirect: sub + '/login',
     meta: {
       name: '入口'
     }

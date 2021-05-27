@@ -10,7 +10,7 @@ const microMainConfig = (microAppSetting[process.env.NODE_ENV] || [{ base: '' }]
 const port = process.env.NODE_ENV === 'development' ? 8089 : microMainConfig.port
 const publicPath = `${microMainConfig.host}:${port}/micro-app-main/`
 const dev = process.env.NODE_ENV === 'development'
-
+console.log(publicPath)
 const { name } = require('./package')
 
 function resolve (dir) {

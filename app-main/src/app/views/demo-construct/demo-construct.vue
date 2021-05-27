@@ -1,6 +1,6 @@
 <template>
   <div class="demo-construct">
-    <RedditOutlined style="font-size: 30px" />
+    <RedditOutlined style="font-size: 30px"/>
     <SyncOutlined
       spin
       style="font-size: 30px"
@@ -21,7 +21,7 @@
       icon="aim"
       style="width: 30px;height: 30px;"
     />
-    <a-divider />
+    <a-divider/>
     <h1 class='p'>This is an demo-construct page --- {{ myCountComputed }}(computed)</h1>
     <h1>This is an global store data change --- {{ storeCount }}</h1>
     <h1>This is an local store data change --- {{ localCount }} --- {{ localMapCount }}(nameScoped mapState)</h1>
@@ -46,7 +46,7 @@
     <pre>
       {{ envVar }}
     </pre>
-    <div id="sub-app" />
+    <div id="sub-app"/>
   </div>
 </template>
 
@@ -60,8 +60,9 @@ import { RedditOutlined, SyncOutlined, SmileOutlined, HeartTwoTone } from '@ant-
 import { LocalStorageUtil, ToolsUtil } from '@/common/utils'
 import themeColor from '@/assets/plugins/themeColor'
 import { win } from '@/common/base'
+
 const { mapState } = createNamespacedHelpers('DemoConstructStore')
-declare const window:win
+declare const window: win
 
 export default defineComponent({
   name: 'DemoConstruct',
@@ -156,8 +157,20 @@ export default defineComponent({
       myCount,
       myCountComputed,
       changeMyCount,
-      storeCount: computed(() => store.state.storeCount),
-      localCount: computed(() => store.state.DemoConstructStore.localCount),
+      storeCount: computed(() => {
+        if (store) {
+          return store.state.storeCount
+        } else {
+          return undefined
+        }
+      }),
+      localCount: computed(() => {
+        if (store) {
+          return store.state.DemoConstructStore.localCount
+        } else {
+          return undefined
+        }
+      }),
       changeTheme () {
         // const hideMessage = message.loading('正在切换主题！', 0)
         window.$theme.style = ToolsUtil.themeMap.zksd.themeLabel
@@ -200,6 +213,6 @@ export default defineComponent({
 </script>
 <style lang="less" theme='educational'>
   .p {
-    font-size:60px!important;
+    font-size: 60px !important;
   }
 </style>

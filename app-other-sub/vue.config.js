@@ -10,6 +10,7 @@ const { microAppSetting } = require('../package.json')
 const microSubConfig = (microAppSetting[process.env.NODE_ENV] || []).filter(e => e.name === name)[0] || { base: '' }
 const publicPath = `${microSubConfig.host}:${microSubConfig.port}${microSubConfig.base.split('#/')[0]}`
 const dev = process.env.NODE_ENV === 'development'
+console.log(publicPath)
 
 function getAntdSerials (color) {
   // 淡化（即less的tint）

@@ -31,7 +31,7 @@
     <a-button @click="incrementLocal()">
       add local storeCount
     </a-button>
-    <a-button @click="changeTheme()">
+    <a-button @click="changeTheme()" v-if='!qiankun'>
       更换主题
     </a-button>
     <a-button @click="toLogin()">
@@ -152,6 +152,7 @@ export default defineComponent({
       myCount,
       myCountComputed,
       changeMyCount,
+      qiankun: window.__POWERED_BY_QIANKUN__,
       storeCount: computed(() => {
         if (store) {
           return store.state.storeCount
